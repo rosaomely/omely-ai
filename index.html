@@ -5,111 +5,138 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Omely AI - Experto Total</title>
     <style>
-        /* Estilos visuales modernos y oscuros */
+        /* ESTILO EXACTO DE TU CAPTURA (Fondo oscuro y Chat moderno) */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        
         body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            background: #0f1117; 
-            color: #e0e0e0; 
-            display: flex; 
-            flex-direction: column; 
-            height: 100vh; 
-            margin: 0; 
+            background-color: #0d1117; /* Fondo general oscuro */
+            color: #e6edf3; 
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
             overflow: hidden;
         }
-        
+
+        /* Contenedor del chat */
         #chat-container { 
             flex: 1; 
             overflow-y: auto; 
-            padding: 20px; 
+            padding: 40px 20px 120px 20px; /* Espacio abajo para el input */
             display: flex; 
             flex-direction: column; 
-            gap: 15px; 
-            padding-bottom: 80px;
+            gap: 20px; 
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
         }
-        
-        /* Estilos de los mensajes */
+
+        /* Mensajes */
         .msg { 
-            padding: 12px 18px; 
+            padding: 15px 20px; 
             border-radius: 12px; 
-            max-width: 85%; 
-            line-height: 1.5;
+            max-width: 100%; 
+            line-height: 1.6;
             animation: fadeIn 0.3s ease;
+            font-size: 15px;
         }
         
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         .user { 
             align-self: flex-end; 
-            background: #2b5aff; 
+            background: #2b5aff; /* Azul brillante igual a la captura */
             color: white; 
             border-bottom-right-radius: 4px;
+            max-width: 80%;
         }
         
         .bot { 
             align-self: flex-start; 
-            background: #1e2128; 
-            color: #e0e0e0; 
+            background: #161b22; /* Gris oscuro igual a la captura */
+            color: #e6edf3; 
             border-bottom-left-radius: 4px;
-            border: 1px solid #333;
+            border: 1px solid #30363d;
+            max-width: 90%;
         }
         
-        .bot strong, .bot b { color: #8b9aff; }
+        /* Mensaje de error rojo */
+        .error-msg {
+            align-self: center;
+            background: #2d1b1e;
+            border: 1px solid #f85149;
+            color: #f85149;
+            border-radius: 12px;
+            padding: 12px 20px;
+            margin-top: 10px;
+            max-width: 90%;
+        }
 
-        /* Área de entrada y configuración */
+        .bot strong, .bot b { color: #58a6ff; }
+
+        /* Área de entrada inferior fija */
         #input-area { 
             position: fixed; 
             bottom: 0; 
             width: 100%; 
-            background: #0f1117; 
-            padding: 15px; 
-            box-sizing: border-box; 
+            background: #0d1117; 
+            padding: 20px; 
             display: flex; 
-            gap: 10px; 
+            gap: 12px; 
             align-items: center;
-            border-top: 1px solid #222;
+            justify-content: center;
         }
+
+        .input-wrapper {
+            max-width: 800px;
+            width: 100%;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            background: #161b22;
+            padding: 10px 15px;
+            border-radius: 25px;
+            border: 1px solid #30363d;
+        }
+        .input-wrapper:focus-within { border-color: #2b5aff; }
 
         input[type="text"] { 
             flex: 1; 
-            padding: 12px 15px; 
-            border-radius: 25px; 
-            border: 1px solid #333; 
-            background: #1e2128; 
+            padding: 10px; 
+            border: none; 
+            background: transparent; 
             color: #fff; 
             outline: none;
             font-size: 15px;
         }
-        input[type="text"]:focus { border-color: #2b5aff; }
 
+        /* Botones redondos y azules */
         button { 
-            padding: 10px 20px; 
             border: none; 
-            border-radius: 25px; 
-            background: #2b5aff; 
-            color: white; 
             cursor: pointer; 
-            font-weight: bold;
             transition: 0.2s;
         }
-        button:hover { background: #1d45d6; }
+        
+        .btn-send {
+            background: #2b5aff;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+        .btn-send:hover { background: #1d45d6; }
 
         .btn-icon {
             background: transparent;
-            border: 1px solid #333;
-            padding: 10px;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
+            color: #8b949e;
+            font-size: 20px;
+            padding: 5px;
             display: flex;
             justify-content: center;
             align-items: center;
         }
-        .btn-icon:hover { background: #1e2128; border-color: #555; }
+        .btn-icon:hover { color: #e6edf3; }
 
-        /* Panel de Configuración (Oculto por defecto) */
+        /* Panel de Configuración (Ventana modal) */
         #config-panel {
             display: none;
             position: fixed;
@@ -120,50 +147,45 @@
             z-index: 1000;
         }
         .config-box {
-            background: #1e2128;
+            background: #161b22;
             padding: 30px;
             border-radius: 15px;
             width: 90%;
             max-width: 450px;
-            border: 1px solid #333;
+            border: 1px solid #30363d;
         }
-        .config-box h2 { margin-top: 0; color: #fff; }
+        .config-box h2 { margin-top: 0; color: #fff; font-weight: normal; }
         .config-box input, .config-box select {
             width: 100%; padding: 12px; margin: 10px 0;
-            background: #0f1117; border: 1px solid #333;
+            background: #0d1117; border: 1px solid #30363d;
             color: #fff; border-radius: 8px; box-sizing: border-box;
         }
         .config-box button {
             width: 100%; margin-top: 15px;
+            background: #2b5aff; color: #fff; padding: 12px; border-radius: 8px;
         }
-        .close-config {
-            position: absolute; top: 20px; right: 20px;
-            color: #fff; cursor: pointer; font-size: 24px;
-        }
+        .config-box button:hover { background: #1d45d6; }
 
-        /* Estilos para el botón de adjuntar archivo oculto */
+        /* Etiqueta de archivo */
         #file-input { display: none; }
-        .file-label {
-            cursor: pointer;
-            padding: 10px;
-            border-radius: 50%;
-            transition: 0.2s;
-            width: 20px; height: 20px;
-            text-align: center;
-            line-height: 20px;
-            display: inline-block;
-        }
-        .file-label:hover { background: #1e2128; }
-
+        
+        /* Mensaje de escritura */
         .typing-indicator {
             align-self: flex-start;
-            background: #1e2128;
-            padding: 12px 18px;
+            background: #161b22;
+            padding: 15px 20px;
             border-radius: 12px;
             border-bottom-left-radius: 4px;
-            border: 1px solid #333;
-            color: #888;
+            border: 1px solid #30363d;
+            color: #8b949e;
             font-style: italic;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .user, .bot { max-width: 95%; }
+            #chat-container { padding: 20px 10px 100px 10px; }
+            .input-wrapper { padding: 8px 10px; }
         }
     </style>
 </head>
@@ -171,16 +193,18 @@
 
     <!-- Panel de Configuración -->
     <div id="config-panel">
-        <div class="close-config" onclick="toggleConfig()">✕</div>
         <div class="config-box">
             <h2>⚙️ Configuración</h2>
-            <p style="color: #aaa; font-size: 14px;">Pega tu API Key de OpenRouter aquí.</p>
+            <p style="color: #8b949e; font-size: 14px; margin-bottom: 15px;">Pega tu API Key de OpenRouter.</p>
             <input type="password" id="apiKeyInput" placeholder="sk-or-v1-...">
+            
+            <label style="color: #8b949e; font-size: 14px;">Modelo de IA (cambia si da error):</label>
             <select id="modelSelect">
-                <option value="google/gemini-2.0-flash-exp:free">Gemini 2.0 Flash (Gratis - Recomendado)</option>
-                <option value="deepseek/deepseek-chat">DeepSeek V3 (Muy barato y potente)</option>
-                <option value="anthropic/claude-3.5-sonnet">Claude 3.5 Sonnet (Caro, mejor para analizar)</option>
+                <option value="google/gemini-2.0-flash-exp:free">Gemini 2.0 Flash (Gratis)</option>
+                <option value="deepseek/deepseek-chat" selected>DeepSeek V3 (Muy barato y potente)</option>
+                <option value="openai/gpt-4o-mini">GPT-4o Mini (Recomendado)</option>
             </select>
+
             <button onclick="guardarConfig()">Guardar y Conectar</button>
         </div>
     </div>
@@ -197,30 +221,28 @@
     
     <!-- Área de Entrada -->
     <div id="input-area">
-        <button class="btn-icon" onclick="toggleConfig()" title="Configurar API Key">⚙️</button>
-        
-        <label for="file-input" class="file-label" title="Adjuntar Imagen o PDF">📎</label>
-        <input type="file" id="file-input" accept=".png,.jpg,.jpeg,.gif,.webp,.pdf" onchange="procesarArchivo(event)">
+        <div class="input-wrapper">
+            <button class="btn-icon" onclick="toggleConfig()" title="Configurar API Key">⚙️</button>
+            
+            <label for="file-input" class="btn-icon" title="Adjuntar Imagen o PDF">📎</label>
+            <input type="file" id="file-input" accept=".png,.jpg,.jpeg,.gif,.webp,.pdf" onchange="procesarArchivo(event)">
 
-        <input type="text" id="userInput" placeholder="Escribe tu consulta o adjunta un archivo..." onkeypress="if(event.key==='Enter') enviarMensaje()">
-        <button onclick="enviarMensaje()">Enviar ➤</button>
+            <input type="text" id="userInput" placeholder="Escribe tu consulta o adjunta un archivo..." onkeypress="if(event.key==='Enter') enviarMensaje()">
+            
+            <button class="btn-send" onclick="enviarMensaje()">Enviar ➤</button>
+        </div>
     </div>
 
     <script>
         // Variables globales
-        let apiKey = localStorage.getItem('omely_api_key_v2');
-        let modeloGuardado = localStorage.getItem('omely_model_v2') || "google/gemini-2.0-flash-exp:free";
-        let archivoAdjunto = null; // Para guardar la imagen o pdf
+        let apiKey = localStorage.getItem('omely_api_key_v3');
+        let modeloGuardado = localStorage.getItem('omely_model_v3') || "deepseek/deepseek-chat"; // Cambié el default
+        let archivoAdjunto = null;
 
-        // EL PROMPT DE SISTEMA QUE PEDISTE
-        const systemPrompt = `Eres un asistente omnisciente y multidisciplinario. Tus áreas de expertise incluyen: Medicina general, Programación, Redes informáticas, Diseño, Análisis de datos y Estadística, Matemáticas, Construcción civil y Carpintería, Suite Office, Redacción y Normas APA, Geografía, Historia, Inglés y Español, y Sistema SAINT. INSTRUCCIONES: 1. Responde SIEMPRE en español. 2. Usa un tono natural, sencillo, humano y habla en PRIMERA PERSONA ("yo creo que...", "he visto que..."). 3. PROHIBIDO inventar información. Si no sabes, pregúntame amablemente para obtener más datos. 4. Si te subo un archivo (imagen o PDF), analízalo basándote en el contenido y responde con base en ello.`;
+        const systemPrompt = `Eres un asistente omnisciente y multidisciplinario. Tus áreas de expertise incluyen: Medicina general, Programación, Redes informáticas, Diseño, Análisis de datos y Estadística, Matemáticas, Construcción civil y Carpintería, Suite Office, Redacción y Normas APA, Geografía, Historia, Inglés y Español, y Sistema SAINT. INSTRUCCIONES: 1. Responde SIEMPRE en español. 2. Usa un tono natural, sencillo, humano y habla en PRIMERA PERSONA ("yo creo que...", "he visto que..."). 3. PROHIBIDO inventar información. Si no sabes, pregúntame amablemente. 4. Si te subo un archivo (imagen), analízalo basándote en el contenido.`;
 
-        // Si no hay llave guardada, mostrar configuración al cargar
-        if(!apiKey) {
-            document.getElementById('config-panel').style.display = 'flex';
-        }
+        if(!apiKey) { document.getElementById('config-panel').style.display = 'flex'; }
 
-        // Funciones de Configuración
         function toggleConfig() {
             const panel = document.getElementById('config-panel');
             panel.style.display = panel.style.display === 'none' ? 'flex' : 'none';
@@ -230,24 +252,31 @@
             const key = document.getElementById('apiKeyInput').value.trim();
             const model = document.getElementById('modelSelect').value;
             if(key) {
-                localStorage.setItem('omely_api_key_v2', key);
-                localStorage.setItem('omely_model_v2', model);
+                localStorage.setItem('omely_api_key_v3', key);
+                localStorage.setItem('omely_model_v3', model);
                 apiKey = key;
                 modeloGuardado = model;
                 document.getElementById('config-panel').style.display = 'none';
-                addMessage("bot", "✅ **¡Listo!** Llave configurada correctamente. Ya puedes hacerme cualquier consulta.");
+                addMessage("bot", "✅ **¡Listo!** Llave configurada correctamente.");
             } else {
                 alert("Por favor, ingresa una API Key válida.");
             }
         }
 
-        // Funciones del Chat y Archivos
         function addMessage(role, text) {
             const container = document.getElementById('chat-container');
             const div = document.createElement('div');
             div.className = role === 'user' ? 'msg user' : 'msg bot';
-            // Convertimos saltos de línea y negritas simples de Markdown a HTML
             div.innerHTML = text.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function addError(text) {
+            const container = document.getElementById('chat-container');
+            const div = document.createElement('div');
+            div.className = 'error-msg';
+            div.innerHTML = `❌ ${text}`;
             container.appendChild(div);
             container.scrollTop = container.scrollHeight;
         }
@@ -270,61 +299,40 @@
         function procesarArchivo(event) {
             const file = event.target.files[0];
             if (!file) return;
-            
-            // Guardamos el archivo en memoria para enviarlo
             archivoAdjunto = file;
-            addMessage("user", `📎 He recibido tu archivo: **${file.name}**. Estoy listo para analizarlo. Escribe qué quieres que haga con él.`);
-            document.getElementById('file-input').value = ''; // Resetear input
+            addMessage("user", `📎 He recibido tu archivo: **${file.name}**`);
+            document.getElementById('file-input').value = '';
         }
 
         async function enviarMensaje() {
             const input = document.getElementById('userInput');
             const text = input.value.trim();
-            
-            // Si no hay texto ni archivo, no hacer nada
             if(!text && !archivoAdjunto) return;
+            if(!apiKey) { alert("Haz clic en el engranaje ⚙️ y pega tu API Key."); return; }
 
-            if(!apiKey) { 
-                alert("Primero debes hacer clic en el engranaje ⚙️ y pegar tu API Key de OpenRouter."); 
-                return; 
-            }
-
-            // Construir el mensaje
             let userMessage = text;
-            if(archivoAdjunto) {
-                userMessage = `[Archivo adjunto: ${archivoAdjunto.name}]\n` + (text ? `Pregunta sobre el archivo: ${text}` : "Analiza este archivo y dime de qué trata.");
-            }
+            if(archivoAdjunto) userMessage = `[Archivo: ${archivoAdjunto.name}]\n` + text;
 
             addMessage('user', userMessage);
             input.value = '';
-            
-            // Si hay archivo, prepararlo. Si no, enviar solo texto.
+
             let messages = [
                 { "role": "system", "content": systemPrompt },
                 { "role": "user", "content": userMessage }
             ];
 
-            // Si es una imagen, la convertimos a Base64 para que la IA la vea
             if(archivoAdjunto && archivoAdjunto.type.startsWith('image/')) {
                 const reader = new FileReader();
                 reader.onload = async function(e) {
                     const base64Image = e.target.result;
                     messages[1] = {
                         "role": "user",
-                        "content": [
-                            { "type": "text", "text": text || "Analiza esta imagen y dime qué ves." },
-                            { "type": "image_url", "image_url": { "url": base64Image } }
-                        ]
+                        "content": [ { "type": "text", "text": text || "Analiza esta imagen" }, { "type": "image_url", "image_url": { "url": base64Image } } ]
                     };
-                    archivoAdjunto = null; // Limpiar memoria
+                    archivoAdjunto = null;
                     await llamarAPI(messages);
                 };
                 reader.readAsDataURL(archivoAdjunto);
-            } else if (archivoAdjunto && archivoAdjunto.type === 'application/pdf') {
-                // Nota: OpenRouter NO acepta PDFs nativos en el modelo gratis. Hay que convertirlos a texto.
-                addMessage('bot', "⚠️ **Aviso:** La versión gratuita de la IA no puede leer PDFs directamente. Por favor, copia el texto del PDF y pégalo aquí, o usa una imagen de las páginas.");
-                archivoAdjunto = null;
-                return;
             } else {
                 archivoAdjunto = null;
                 await llamarAPI(messages);
@@ -333,34 +341,24 @@
 
         async function llamarAPI(messages) {
             addTyping();
-
             try {
                 const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
                     method: "POST",
-                    headers: {
-                        "Authorization": `Bearer ${apiKey}`,
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        "model": modeloGuardado,
-                        "messages": messages
-                    })
+                    headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
+                    body: JSON.stringify({ "model": modeloGuardado, "messages": messages })
                 });
 
                 const data = await response.json();
                 removeTyping();
 
                 if(data.error) {
-                    addMessage('bot', `❌ **Error de la API:** ${data.error.message}. Asegúrate de tener saldo en OpenRouter o cambiar el modelo.`);
+                    addError(`Error de la API: ${data.error.message}. Asegúrate de tener saldo o cambia el modelo.`);
                     return;
                 }
-
-                const reply = data.choices[0].message.content;
-                addMessage('bot', reply);
-
+                addMessage('bot', data.choices[0].message.content);
             } catch (error) {
                 removeTyping();
-                addMessage('bot', `❌ **Error de conexión:** No pude comunicarme con el servidor. Revisa tu internet. Detalle: ${error.message}`);
+                addError(`Error de conexión: ${error.message}`);
             }
         }
     </script>
