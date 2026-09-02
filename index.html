@@ -218,7 +218,7 @@
             width: 100%;
             max-width: 1000px;
             margin: 0 auto;
-            scroll-behavior: smooth; /* Desplazamiento suave nativo */
+            scroll-behavior: smooth;
         }
 
         .chat-container::-webkit-scrollbar {
@@ -238,6 +238,13 @@
             font-size: 0.95rem;
             word-wrap: break-word;
             white-space: pre-wrap;
+            cursor: pointer;
+            transition: border-color 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .message.ai:hover {
+            border-color: #3c3d40;
         }
 
         .message.user {
@@ -245,6 +252,7 @@
             color: #e3e3e3;
             align-self: flex-end;
             border-bottom-right-radius: 4px;
+            cursor: default;
         }
 
         .message.ai {
@@ -307,6 +315,11 @@
             display: flex;
             flex-direction: column;
             gap: 8px;
+            cursor: pointer;
+        }
+
+        .result-card:hover {
+            border-color: #8ab4f8;
         }
 
         .result-header {
@@ -413,12 +426,6 @@
             padding-top: 4px;
         }
 
-        .input-actions {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
         .action-left, .action-right {
             display: flex;
             gap: 8px;
@@ -491,14 +498,14 @@
             <div class="history-list" id="historyList"></div>
         </div>
         <div class="sidebar-bottom">
-            <button class="action-sidebar-btn" onclick="exportarChatActual()" title="Guardar chat activo en un archivo de texto">📥 Exportar</button>
-            <button class="trash-btn" title="Eliminar todo el historial definitivamente" onclick="borrarHistorialDefinitivo()">🗑️</button>
+            <button class="action-sidebar-btn" onclick="exportarChatActual()" title="Guardar chat activo">📥 Exportar</button>
+            <button class="trash-btn" title="Eliminar todo el historial" onclick="borrarHistorialDefinitivo()">🗑️</button>
         </div>
     </aside>
 
     <main class="main-container">
         <div class="chat-container" id="chatContainer">
-            <div class="message ai">
+            <div class="message ai" onclick="mostrarConteoTexto(this.querySelector('.ai-text').textContent)">
                 <div class="ai-text">¿En qué puedo ayudarte?</div>
             </div>
         </div>
@@ -513,7 +520,7 @@
             
             <div class="input-area-wrapper">
                 <div class="input-box">
-                    <textarea id="userInput" placeholder="Escribe un mensaje o adjunta un archivo..." rows="1" oninput="actualizarContador(this); ajustarAlturaTextarea(this);" onkeydown="handleKeyPress(event)"></textarea>
+                    <textarea id="userInput" placeholder="Escribe un mensaje o adjunta un archivo..." rows="1" oninput="actualizarContadorEscritura(this); ajustarAlturaTextarea(this);" onkeydown="handleKeyPress(event)"></textarea>
                     
                     <div class="input-footer-info">
                         <div class="action-left">
@@ -527,7 +534,7 @@
                     </div>
                 </div>
             </div>
-            <div class="footer-note">Omely AI mantiene la secuencia de tu conversación activa.</div>
+            <div class="footer-note">💡 Tip: Haz clic en cualquier respuesta de la IA para ver sus palabras y caracteres en el contador.</div>
         </div>
     </main>
 
@@ -543,7 +550,6 @@
 
         let listaChats = JSON.parse(localStorage.getItem('omely_chats')) || [];
         let chatActivoId = null;
-
         let archivoCargadoBase64 = null;
         let archivoCargadoNombre = null;
 
@@ -552,11 +558,19 @@
             el.style.height = (el.scrollHeight) + 'px';
         }
 
-        function actualizarContador(el) {
+        function actualizarContadorEscritura(el) {
             const texto = el.value;
+            actualizarContadorTexto(texto);
+        }
+
+        function actualizarContadorTexto(texto) {
             const caracteres = texto.length;
             const palabras = texto.trim() === '' ? 0 : texto.trim().split(/\s+/).length;
             wordCounter.textContent = `${palabras} palabras | ${caracteres} caracteres`;
+        }
+
+        function mostrarConteoTexto(texto) {
+            actualizarContadorTexto(texto);
         }
 
         function guardarEnLocalStorage() {
@@ -566,16 +580,14 @@
         function exportarChatActual() {
             const chatActual = listaChats.find(c => c.id === chatActivoId);
             if (!chatActual || chatActual.mensajes.length === 0) {
-                alert("No hay un chat activo con mensajes para exportar.");
+                alert("No hay un chat activo para exportar.");
                 return;
             }
-
             let contenidoExportar = `--- CONVERSACIÓN: ${chatActual.titulo} ---\n\n`;
             chatActual.mensajes.forEach(m => {
                 const rol = m.tipo === 'user' ? 'Usuario' : 'Omely';
                 contenidoExportar += `${rol}: ${m.texto}\n\n`;
             });
-
             const blob = new Blob([contenidoExportar], { type: 'text/plain;charset=utf-8' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -599,7 +611,6 @@
                 const btnEliminar = document.createElement('button');
                 btnEliminar.className = 'delete-chat-btn';
                 btnEliminar.innerHTML = '✕';
-                btnEliminar.title = 'Eliminar este chat';
                 btnEliminar.onclick = (e) => {
                     e.stopPropagation();
                     eliminarChatEspecifico(chat.id);
@@ -613,8 +624,9 @@
 
         function nuevoChat() {
             chatActivoId = null;
-            chatContainer.innerHTML = '<div class="message ai"><div class="ai-text">¿En qué puedo ayudarte?</div></div>';
+            chatContainer.innerHTML = '<div class="message ai" onclick="mostrarConteoTexto(this.querySelector(\'.ai-text\').textContent)"><div class="ai-text">¿En qué puedo ayudarte?</div></div>';
             quitarArchivo();
+            wordCounter.textContent = '0 palabras | 0 caracteres';
             renderizarHistorialSidebar();
         }
 
@@ -633,16 +645,12 @@
         function eliminarChatEspecifico(id) {
             listaChats = listaChats.filter(c => c.id !== id);
             guardarEnLocalStorage();
-
-            if (chatActivoId === id) {
-                nuevoChat();
-            } else {
-                renderizarHistorialSidebar();
-            }
+            if (chatActivoId === id) nuevoChat();
+            else renderizarHistorialSidebar();
         }
 
         async function borrarHistorialDefinitivo() {
-            if (confirm("¿Deseas eliminar todo el historial de conversaciones?")) {
+            if (confirm("¿Deseas eliminar todo el historial?")) {
                 listaChats = [];
                 guardarEnLocalStorage();
                 nuevoChat();
@@ -660,7 +668,6 @@
             if (input.files && input.files[0]) {
                 const archivo = input.files[0];
                 archivoCargadoNombre = archivo.name;
-
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     archivoCargadoBase64 = e.target.result;
@@ -706,14 +713,12 @@
                 respuesta: m.tipo === 'ai' ? m.texto : ''
             }));
 
-            const modeloSeleccionado = modelSelect.value;
-
             const payload = {
                 mensaje: mensajeTexto,
                 archivoContenido: archivoCargadoBase64,
                 archivoNombre: archivoCargadoNombre,
                 historialChat: historialSecuencia,
-                modelo: modeloSeleccionado
+                modelo: modelSelect.value
             };
 
             userInput.value = '';
@@ -735,11 +740,10 @@
                 if (!response.ok) throw new Error(data.error || 'Error en el servidor');
 
                 textDiv.textContent = data.respuesta || "Sin respuesta.";
-                
+                mostrarConteoTexto(data.respuesta || "");
                 agregarAccionesIA(divMsg, textDiv);
 
                 chatActual.mensajes.push({ texto: data.respuesta, tipo: 'ai' });
-                
                 guardarEnLocalStorage();
                 renderizarHistorialSidebar();
 
@@ -754,11 +758,13 @@
         function agregarMensajeDOM(texto, tipo) {
             const div = document.createElement('div');
             div.className = `message ${tipo}`;
+            
             if (tipo === 'ai') {
                 const textDiv = document.createElement('div');
                 textDiv.className = 'ai-text';
                 textDiv.textContent = texto;
                 div.appendChild(textDiv);
+                div.onclick = () => mostrarConteoTexto(texto);
                 agregarAccionesIA(div, textDiv);
             } else {
                 div.textContent = texto;
@@ -775,6 +781,7 @@
             textDiv.className = 'ai-text';
             textDiv.textContent = texto;
             div.appendChild(textDiv);
+            div.onclick = () => mostrarConteoTexto(textDiv.textContent);
             chatContainer.appendChild(div);
             chatContainer.scrollTop = chatContainer.scrollHeight;
             return { divMsg: div, textDiv };
@@ -799,62 +806,19 @@
             const analysisBox = document.createElement('div');
             analysisBox.className = 'analysis-box';
 
-            // ANALIZAR IA CON TEXTO DINÁMICO
-            btnDetectar.onclick = async () => {
-                btnDetectar.textContent = '🔍 Analizando...';
-                analysisBox.style.display = 'block';
-                analysisBox.textContent = 'Analizando texto...';
-                try {
-                    const res = await fetch('/api/analizar-ia', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ texto: textDiv.textContent })
-                    });
-                    const data = await res.json();
-                    analysisBox.innerHTML = `📊 <b>Probabilidad de IA:</b> ${data.porcentaje}% ${data.cliches.length > 0 ? '<br>⚠️ <i>Patrones: ' + data.cliches.join(', ') + '</i>' : '<br>✅ Texto natural.'}`;
-                } catch (e) {
-                    analysisBox.textContent = 'Error al realizar el análisis.';
-                } finally {
-                    btnDetectar.textContent = '🔍 Analizar IA';
-                }
+            btnDetectar.onclick = (e) => {
+                e.stopPropagation();
+                analizarTextoIA(textDiv, btnDetectar, analysisBox);
             };
 
-            // PARAFRASEAR CON TEXTO DINÁMICO Y AUTO-SCROLL SUAVE
-            btnParafrasear.onclick = async () => {
-                btnParafrasear.textContent = '🔄 Parafraseando...';
-                try {
-                    const res = await fetch('/api/humanizar', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ texto: textDiv.textContent, tipo: 'parafrasear', modelo: modelSelect.value })
-                    });
-                    const data = await res.json();
-                    
-                    crearTarjetaResultado(divMsg, '🔄 Versión Parafraseada:', data.resultado);
-                } catch (e) {
-                    alert('Error al parafrasear.');
-                } finally {
-                    btnParafrasear.textContent = '🔄 Parafrasear';
-                }
+            btnParafrasear.onclick = (e) => {
+                e.stopPropagation();
+                ejecutarTransformacion(textDiv, 'parafrasear', btnParafrasear, divMsg);
             };
 
-            // HUMANIZAR CON TEXTO DINÁMICO Y AUTO-SCROLL SUAVE
-            btnHumanizar.onclick = async () => {
-                btnHumanizar.textContent = '✨ Humanizando...';
-                try {
-                    const res = await fetch('/api/humanizar', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ texto: textDiv.textContent, tipo: 'humanizar', modelo: modelSelect.value })
-                    });
-                    const data = await res.json();
-                    
-                    crearTarjetaResultado(divMsg, '✨ Versión Humanizada:', data.resultado);
-                } catch (e) {
-                    alert('Error al humanizar.');
-                } finally {
-                    btnHumanizar.textContent = '✨ Humanizar tono';
-                }
+            btnHumanizar.onclick = (e) => {
+                e.stopPropagation();
+                ejecutarTransformacion(textDiv, 'humanizar', btnHumanizar, divMsg);
             };
 
             actionsBar.appendChild(btnDetectar);
@@ -865,9 +829,47 @@
             divMsg.appendChild(analysisBox);
         }
 
+        async function analizarTextoIA(textDiv, btnDetectar, analysisBox) {
+            btnDetectar.textContent = '🔍 Analizando...';
+            analysisBox.style.display = 'block';
+            analysisBox.textContent = 'Analizando texto...';
+            try {
+                const res = await fetch('/api/analizar-ia', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ texto: textDiv.textContent })
+                });
+                const data = await res.json();
+                analysisBox.innerHTML = `📊 <b>Probabilidad de IA:</b> ${data.porcentaje}% ${data.cliches.length > 0 ? '<br>⚠️ <i>Patrones: ' + data.cliches.join(', ') + '</i>' : '<br>✅ Texto natural.'}`;
+            } catch (e) {
+                analysisBox.textContent = 'Error al realizar el análisis.';
+            } finally {
+                btnDetectar.textContent = '🔍 Analizar IA';
+            }
+        }
+
+        async function ejecutarTransformacion(textDiv, tipo, btnObj, divMsg) {
+            const nombreOriginalBtn = btnObj.textContent;
+            btnObj.textContent = tipo === 'parafrasear' ? '🔄 Parafraseando...' : '✨ Humanizando...';
+            try {
+                const res = await fetch('/api/humanizar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ texto: textDiv.textContent, tipo: tipo, modelo: modelSelect.value })
+                });
+                const data = await res.json();
+                crearTarjetaResultado(divMsg, tipo === 'parafrasear' ? '🔄 Versión Parafraseada:' : '✨ Versión Humanizada:', data.resultado);
+            } catch (e) {
+                alert('Error al procesar la transformación.');
+            } finally {
+                btnObj.textContent = nombreOriginalBtn;
+            }
+        }
+
         function crearTarjetaResultado(divMsg, titulo, contenido) {
             const resultCard = document.createElement('div');
             resultCard.className = 'result-card';
+            resultCard.onclick = () => mostrarConteoTexto(contenido);
 
             const headerCard = document.createElement('div');
             headerCard.className = 'result-header';
@@ -876,26 +878,23 @@
             const copyBtn = document.createElement('button');
             copyBtn.className = 'action-chip';
             copyBtn.textContent = 'Copiar';
-            copyBtn.onclick = () => {
+            copyBtn.onclick = (e) => {
+                e.stopPropagation();
                 navigator.clipboard.writeText(contenido);
                 copyBtn.textContent = '¡Copiado!';
                 setTimeout(() => copyBtn.textContent = 'Copiar', 2000);
             };
 
             headerCard.appendChild(copyBtn);
-
             const contentCard = document.createElement('div');
             contentCard.textContent = contenido;
 
             resultCard.appendChild(headerCard);
             resultCard.appendChild(contentCard);
-
             agregarAccionesIA(resultCard, contentCard);
-
             divMsg.appendChild(resultCard);
-
-            // AUTO-SCROLL SUAVE HACIA LA NUEVA TARJETA
             resultCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            mostrarConteoTexto(contenido);
         }
 
         renderizarHistorialSidebar();

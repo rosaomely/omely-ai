@@ -76,7 +76,7 @@ app.post('/api/analizar-ia', (req, res) => {
     return res.json(analisis);
 });
 
-// --- RUTA DE PARAFRASEO Y HUMANIZACIÓN ---
+// --- RUTA DE PARAFRASEO Y HUMANIZACIÓN ANTI-PLAGIO Y ANTI-IA ---
 app.post('/api/humanizar', async (req, res) => {
     try {
         const { texto, tipo, modelo } = req.body;
@@ -86,12 +86,12 @@ app.post('/api/humanizar', async (req, res) => {
         let promptInstruccionEspecial = "";
 
         if (tipo === 'parafrasear') {
-            promptInstruccionEspecial = `Parafrasea el siguiente texto manteniendo estrictamente su significado original, pero cambiando la redacción para que suene natural, fluida y escrita por una persona real. Elimina clichés formales y varía la longitud de las oraciones sin perder información clave. No agregues saludos ni explicaciones, entrega solo el texto transformado:
+            promptInstruccionEspecial = `Reescribe por completo el siguiente texto eliminando cualquier rastro de plagio y de patrones robóticos de IA. Cambia radicalmente la estructura sintáctica, el orden de las ideas y la redacción, asegurando que pase cualquier detector anti-plagio y anti-IA, pero manteniendo intacto el significado técnico y central. No agregues saludos, introducciones ni explicaciones; entrega únicamente el texto reescrito:
 
 Texto original: "${texto}"
-Texto parafraseado:`;
+Texto reescrito:`;
         } else {
-            promptInstruccionEspecial = `Humaniza el tono del siguiente texto para que suene cálido, conversacional y cercano, conservando absolutamente todas las ideas centrales sin distorsionarlas ni inventar datos nuevos. No agregues saludos ni explicaciones, entrega solo el texto transformado:
+            promptInstruccionEspecial = `Humaniza y reescribe por completo el siguiente texto para que pase sin problemas por detectores de IA y plagio. Usa un tono totalmente natural, dinámico y humano, alterando la estructura de las oraciones sin perder la información original. No agregues saludos ni explicaciones; entrega únicamente el texto transformado:
 
 Texto original: "${texto}"
 Texto humanizado:`;
@@ -105,9 +105,9 @@ Texto humanizado:`;
                 prompt: promptInstruccionEspecial,
                 stream: false,
                 options: { 
-                    temperature: 0.7,
+                    temperature: 0.75, // Ajustado para dar suficiente variación y eludir detectores con rapidez
                     top_p: 0.9,
-                    num_predict: 500
+                    num_predict: 400
                 }
             })
         });
@@ -122,33 +122,6 @@ Texto humanizado:`;
     } catch (error) {
         console.error("Error en procesamiento:", error);
         return res.status(500).json({ error: "No se pudo procesar el texto." });
-    }
-});
-
-// --- RUTA PARA CONSULTAS INDEPENDIENTES A GEMINI ---
-app.post('/api/gemini-independiente', async (req, res) => {
-    try {
-        const { mensaje } = req.body;
-        if (!mensaje) return res.status(400).json({ error: "Mensaje vacío" });
-
-        const geminiApiKey = process.env.GEMINI_API_KEY || "TU_API_KEY_DE_GEMINI"; 
-        const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                contents: [{ parts: [{ text: mensaje }] }]
-            })
-        });
-
-        if (!geminiRes.ok) throw new Error("Error al conectar con la API de Gemini.");
-
-        const geminiData = await geminiRes.json();
-        const respuestaGemini = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || "Sin respuesta.";
-
-        return res.json({ respuesta: respuestaGemini });
-    } catch (error) {
-        console.error("Error en Gemini independiente:", error);
-        return res.status(500).json({ error: "No se pudo procesar la consulta en Gemini." });
     }
 });
 
@@ -320,8 +293,8 @@ Omely:`;
                 stream: false,
                 keep_alive: "30m",
                 options: { 
-                    num_predict: 600,     
-                    temperature: 0.5,     // Temperatura más baja para respuestas más objetivas, precisas y directas
+                    num_predict: 500,     
+                    temperature: 0.5,     
                     top_k: 40,            
                     top_p: 0.9,
                     num_thread: 4         
