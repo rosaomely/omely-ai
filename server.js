@@ -125,6 +125,33 @@ Texto humanizado:`;
     }
 });
 
+// --- RUTA PARA CONSULTAS INDEPENDIENTES A GEMINI ---
+app.post('/api/gemini-independiente', async (req, res) => {
+    try {
+        const { mensaje } = req.body;
+        if (!mensaje) return res.status(400).json({ error: "Mensaje vacío" });
+
+        const geminiApiKey = process.env.GEMINI_API_KEY || "TU_API_KEY_DE_GEMINI"; 
+        const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                contents: [{ parts: [{ text: mensaje }] }]
+            })
+        });
+
+        if (!geminiRes.ok) throw new Error("Error al conectar con la API de Gemini.");
+
+        const geminiData = await geminiRes.json();
+        const respuestaGemini = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || "Sin respuesta.";
+
+        return res.json({ respuesta: respuestaGemini });
+    } catch (error) {
+        console.error("Error en Gemini independiente:", error);
+        return res.status(500).json({ error: "No se pudo procesar la consulta en Gemini." });
+    }
+});
+
 async function inicializarArchivos() {
     try {
         await fs.access(HISTORIAL_PATH).catch(async () => {
@@ -201,7 +228,7 @@ app.post('/api/chat', async (req, res) => {
         let ultimoTextoAI = "";
         let contextoConversacion = "";
         if (historialChat && Array.isArray(historialChat)) {
-            const ultimosTurnos = historialChat.slice(-3); // Reducido a 3 para aligerar el prompt
+            const ultimosTurnos = historialChat.slice(-3);
             ultimosTurnos.forEach(turn => {
                 const textoP = turn.pregunta || '';
                 const textoR = turn.respuesta || '';
@@ -269,14 +296,14 @@ Texto a traducir:
 Traducción:`;
         } 
         else {
-            promptInstruccion = `Eres Omely, una mujer real, nativa de Caracas, con una forma de escribir profundamente humana, natural y orgánica. 
+            // PROMPT DE ASISTENTE EXPERTO MULTIDISCIPLINARIO
+            promptInstruccion = `Eres Omely AI, un asistente de inteligencia artificial avanzado, altamente competente, preciso y experto en cualquier área del conocimiento (ciencia, tecnología, programación, cultura, historia, etc.). 
 
-REGLAS ABSOLUTAS ANTI-DETECCIÓN DE IA:
-1. RUPTURA DE BURSTINESS: Mezcla obligatoriamente oraciones cortas con algunas largas y subordinadas. Jamás mantengas un ritmo uniforme.
-2. PERPLEJIDAD HUMANA: Introduce matices conversacionales orgánicos y transiciones naturales de pensamiento.
-3. CERO ESTRUCTURAS ACADÉMICAS: Prohibido usar listas, viñetas, guiones, numeraciones o frases corporativas de cierre.
-4. ESTILO DIRECTO Y FLUIDO: Escribe siempre en primera persona (yo) de forma continua, tuteando al usuario con cercanía, respeto y naturalidad culta.
-5. ORTOGRAFÍA IMPECABLE: Usa correctamente los signos de interrogación y exclamación de apertura y cierre (¡!, ¿?).
+DIRECTRICES DE RESPUESTA:
+1. Responde de manera directa, clara, objetiva y con un alto nivel de precisión técnica o teórica según lo requiera la pregunta.
+2. Explica los conceptos de forma estructurada y profesional, evitando rodeos innecesarios o suposiciones sobre la vida personal del usuario.
+3. Si la pregunta es técnica (como programación, hardware, software o definiciones), aporta explicaciones técnicas exactas, ejemplos o definiciones claras.
+4. Mantén un tono servicial, inteligente y natural en español.
 
 Historial reciente:
 ${contextoConversacion}
@@ -293,11 +320,11 @@ Omely:`;
                 stream: false,
                 keep_alive: "30m",
                 options: { 
-                    num_predict: 500,     // Reducido ligeramente para agilizar respuestas
-                    temperature: 0.85,
-                    top_k: 40,            // Ajustado para acelerar el muestreo
+                    num_predict: 600,     
+                    temperature: 0.5,     // Temperatura más baja para respuestas más objetivas, precisas y directas
+                    top_k: 40,            
                     top_p: 0.9,
-                    num_thread: 4         // Ajustado a 4 hilos estables (puedes subirlo a 6 u 8 según tu CPU)
+                    num_thread: 4         
                 }
             })
         });
