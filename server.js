@@ -76,7 +76,7 @@ app.post('/api/analizar-ia', (req, res) => {
     return res.json(analisis);
 });
 
-// --- RUTA DE PARAFRASEO Y HUMANIZACIÓN ANTI-PLAGIO Y ANTI-IA ---
+// --- RUTA DE PARAFRASEO Y HUMANIZACIÓN SUPREMA EN PRIMERA PERSONA (100% INDETECTABLE) ---
 app.post('/api/humanizar', async (req, res) => {
     try {
         const { texto, tipo, modelo } = req.body;
@@ -86,15 +86,27 @@ app.post('/api/humanizar', async (req, res) => {
         let promptInstruccionEspecial = "";
 
         if (tipo === 'parafrasear') {
-            promptInstruccionEspecial = `Reescribe por completo el siguiente texto eliminando cualquier rastro de plagio y de patrones robóticos de IA. Cambia radicalmente la estructura sintáctica, el orden de las ideas y la redacción, asegurando que pase cualquier detector anti-plagio y anti-IA, pero manteniendo intacto el significado técnico y central. No agregues saludos, introducciones ni explicaciones; entrega únicamente el texto reescrito:
+            promptInstruccionEspecial = `Actúa estrictamente como un redactor humano profesional escribiendo en primera persona del singular ("yo"). Reescribe por completo el siguiente texto adoptando la perspectiva del autor (en primera persona), eliminando cualquier rastro de origen sintético o patrones predecibles de IA.
+
+REGLAS DE ORO ANTIDETECCIÓN:
+1. **Perspectiva personal:** Redacta y expón las ideas hablando directamente en primera persona ("yo considero", "analicé", "pude observar", etc.), haciendo que parezca que el texto fue escrito por una persona real basándose en su propio criterio y experiencia.
+2. **Variabilidad de longitud (Burstiness):** Combina oraciones cortas, contundentes y directas con explicaciones fluidas. Rompe por completo la uniformidad robótica.
+3. **Perplejidad léxica alta:** Utiliza vocabulario orgánico y fluido, descartando totalmente los clichés corporativos o académicos trillados (prohibido usar "es crucial destacar", "por lo tanto", "en resumen", "cabe mencionar").
+4. **Formato:** No agregues saludos, introducciones, comillas ni explicaciones; entrega únicamente el texto reescrito desde la primera palabra.
 
 Texto original: "${texto}"
-Texto reescrito:`;
+Texto reescrito en primera persona:`;
         } else {
-            promptInstruccionEspecial = `Humaniza y reescribe por completo el siguiente texto para que pase sin problemas por detectores de IA y plagio. Usa un tono totalmente natural, dinámico y humano, alterando la estructura de las oraciones sin perder la información original. No agregues saludos ni explicaciones; entrega únicamente el texto transformado:
+            promptInstruccionEspecial = `Transforma por completo el siguiente texto redactándolo en primera persona del singular ("yo"), como si fueras una persona real expresando sus propias ideas de forma espontánea y natural.
+
+DIRECTRICES ABSOLUTAS:
+- Adapta todo el contenido a la primera persona ("yo", "mi enfoque", "he notado", etc.).
+- Elimina cualquier transición robótica o formalismo excesivo.
+- Altera la longitud de las oraciones para que el ritmo de lectura sea dinámico y humano (imposible de detectar por algoritmos).
+- Prohibido agregar saludos, introducciones ni notas adicionales; entrega únicamente el texto transformado.
 
 Texto original: "${texto}"
-Texto humanizado:`;
+Texto humanizado en primera persona:`;
         }
 
         const response = await fetch(OLLAMA_URL, {
@@ -105,9 +117,10 @@ Texto humanizado:`;
                 prompt: promptInstruccionEspecial,
                 stream: false,
                 options: { 
-                    temperature: 0.75, // Ajustado para dar suficiente variación y eludir detectores con rapidez
-                    top_p: 0.9,
-                    num_predict: 400
+                    temperature: 0.85,
+                    top_p: 0.95,
+                    repeat_penalty: 1.2,
+                    num_predict: 600
                 }
             })
         });
@@ -243,10 +256,10 @@ Traducción:`;
         } 
         else if (pideEspanol) {
             let partes = mensaje.split(/:|–|-/);
-            let textoATraducir = partes.length > 1 ? partes.slice(1).join(':').trim() : "";
+            let textoTraducirFinal = partes.length > 1 ? partes.slice(1).join(':').trim() : "";
             
-            if (!textoATraducir || textoATraducir.length < 3) {
-                textoATraducir = ultimoTextoAI;
+            if (!textoTraducirFinal || textoTraducirFinal.length < 3) {
+                textoTraducirFinal = ultimoTextoAI;
             }
 
             promptInstruccion = `Traduce el siguiente texto al español de manera natural, impecable y fluida.
@@ -254,7 +267,7 @@ Traducción:`;
 REGLA ABSOLUTA: PROHIBIDO agregar comentarios, opiniones, saludos, explicaciones ni introducciones. Devuelve únicamente el texto traducido y absolutamente nada más desde la primera palabra.
 
 Texto a traducir:
-"${textoATraducir}"
+"${textoTraducirFinal}"
 
 Traducción:`;
         } 
@@ -269,14 +282,14 @@ Texto a traducir:
 Traducción:`;
         } 
         else {
-            // PROMPT DE ASISTENTE EXPERTO MULTIDISCIPLINARIO
-            promptInstruccion = `Eres Omely AI, un asistente de inteligencia artificial avanzado, altamente competente, preciso y experto en cualquier área del conocimiento (ciencia, tecnología, programación, cultura, historia, etc.). 
+            // PROMPT GENERAL DE ÉLITE Y ANTIDETECCIÓN
+            promptInstruccion = `Eres Omely AI, especialista senior en Computación, Ingeniería de Software, Arquitectura de Sistemas, Redes y Bases de Datos.
 
-DIRECTRICES DE RESPUESTA:
-1. Responde de manera directa, clara, objetiva y con un alto nivel de precisión técnica o teórica según lo requiera la pregunta.
-2. Explica los conceptos de forma estructurada y profesional, evitando rodeos innecesarios o suposiciones sobre la vida personal del usuario.
-3. Si la pregunta es técnica (como programación, hardware, software o definiciones), aporta explicaciones técnicas exactas, ejemplos o definiciones claras.
-4. Mantén un tono servicial, inteligente y natural en español.
+REGLAS ABSOLUTAS DE ESCRITURA HUMANA Y ANTIDETECCIÓN:
+1. **Estilo Humano y Espontáneo:** Escribe de forma directa y natural. Prohibido usar coletillas robóticas de IA ("es crucial destacar", "en resumen", "por lo tanto", "cabe mencionar").
+2. **Variabilidad Estructural:** Altera dinámicamente la longitud de las oraciones para simular el razonamiento y pulso de un escritor humano experto.
+3. **Precisión Técnica:** Si se requiere código, entrégalo completo, funcional, comentado y listo para producción.
+4. **Control de Dudas:** Si una petición carece de parámetros técnicos esenciales o es ambigua, dilo de inmediato en lugar de asumir o improvisar.
 
 Historial reciente:
 ${contextoConversacion}
@@ -293,10 +306,11 @@ Omely:`;
                 stream: false,
                 keep_alive: "30m",
                 options: { 
-                    num_predict: 500,     
-                    temperature: 0.5,     
-                    top_k: 40,            
-                    top_p: 0.9,
+                    num_predict: 800,     
+                    temperature: 0.7,     
+                    top_k: 50,            
+                    top_p: 0.92,          
+                    repeat_penalty: 1.15, 
                     num_thread: 4         
                 }
             })

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Omely AI</title>
+    <title>Omely AI - Asistente Experto</title>
     <style>
         * {
             box-sizing: border-box;
@@ -272,6 +272,25 @@
             align-self: center;
         }
 
+        .ai-text code {
+            background-color: #1e1f20;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            color: #8ab4f8;
+        }
+
+        .ai-text pre {
+            background-color: #18191a;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #2d2e30;
+            overflow-x: auto;
+            margin-top: 8px;
+            margin-bottom: 8px;
+        }
+
         .ai-actions {
             display: flex;
             gap: 8px;
@@ -506,7 +525,7 @@
     <main class="main-container">
         <div class="chat-container" id="chatContainer">
             <div class="message ai" onclick="mostrarConteoTexto(this.querySelector('.ai-text').textContent)">
-                <div class="ai-text">¿En qué puedo ayudarte?</div>
+                <div class="ai-text">Hola, soy Omely AI. ¿En qué puedo ayudarte hoy con tus proyectos o consultas técnicas?</div>
             </div>
         </div>
 
@@ -524,12 +543,12 @@
                     
                     <div class="input-footer-info">
                         <div class="action-left">
-                            <button class="tool-btn" title="Adjuntar archivo" onclick="document.getElementById('fileInput').click()">+</button>
+                            <button class="tool-btn" title="Adjuntar archivo (PDF, DOCX, Imágenes)" onclick="document.getElementById('fileInput').click()">+</button>
                             <input type="file" id="fileInput" style="display: none;" onchange="manejarArchivo(this)">
                         </div>
                         <span id="wordCounter">0 palabras | 0 caracteres</span>
                         <div class="action-right">
-                            <button class="send-btn" title="Enviar" onclick="enviarMensaje()">↑</button>
+                            <button class="send-btn" id="sendBtn" title="Enviar" onclick="enviarMensaje()">↑</button>
                         </div>
                     </div>
                 </div>
@@ -559,8 +578,7 @@
         }
 
         function actualizarContadorEscritura(el) {
-            const texto = el.value;
-            actualizarContadorTexto(texto);
+            actualizarContadorTexto(el.value);
         }
 
         function actualizarContadorTexto(texto) {
@@ -624,7 +642,7 @@
 
         function nuevoChat() {
             chatActivoId = null;
-            chatContainer.innerHTML = '<div class="message ai" onclick="mostrarConteoTexto(this.querySelector(\'.ai-text\').textContent)"><div class="ai-text">¿En qué puedo ayudarte?</div></div>';
+            chatContainer.innerHTML = '<div class="message ai" onclick="mostrarConteoTexto(this.querySelector(\'.ai-text\').textContent)"><div class="ai-text">Hola, soy Omely AI. ¿En qué puedo ayudarte hoy con tus proyectos o consultas técnicas?</div></div>';
             quitarArchivo();
             wordCounter.textContent = '0 palabras | 0 caracteres';
             renderizarHistorialSidebar();
@@ -797,7 +815,7 @@
             
             const btnParafrasear = document.createElement('button');
             btnParafrasear.className = 'action-chip';
-            btnParafrasear.textContent = '🔄 Parafrasear';
+            btnParafrasear.textContent = '🔄 Parafrasear (1ª Persona)';
 
             const btnHumanizar = document.createElement('button');
             btnHumanizar.className = 'action-chip';
@@ -858,7 +876,7 @@
                     body: JSON.stringify({ texto: textDiv.textContent, tipo: tipo, modelo: modelSelect.value })
                 });
                 const data = await res.json();
-                crearTarjetaResultado(divMsg, tipo === 'parafrasear' ? '🔄 Versión Parafraseada:' : '✨ Versión Humanizada:', data.resultado);
+                crearTarjetaResultado(divMsg, tipo === 'parafrasear' ? '🔄 Versión Parafraseada (1ª Persona):' : '✨ Versión Humanizada:', data.resultado);
             } catch (e) {
                 alert('Error al procesar la transformación.');
             } finally {
